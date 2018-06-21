@@ -44,24 +44,51 @@ These images will be uniformly resized to 100 x 100 (height, width) and stored i
 '''
 h = 100
 w = 100
+
 image_names = glob.glob('./images/*')
 n_images = len(image_names)
+
 images = np.array([np.array([cv2.resize(cv2.imread(file),(h,w),cv2.INTER_LANCZOS4) for file in image_names])])[0]
 
 '''
 Split the datasets (images and labels) into training and testing sets.
 The following split will be used: 80% of the dataset will be used as training data. 20% of the dataset will be used as testing data
 '''
-split_idx = math.floor(0.80*n_images)
-train_data = images[0:split_idx]
-test_data = images[split_idx:n_images+1]
-train_label = labels[0:split_idx]
-test_label = labels[split_idx:n_images+1]
+random_seed = 2
+X_train,X_test,Y_train,Y_test = train_test_split(images,labels,test_size=0.2,random_state=random_seed)
+
+###############################################################################
 
 '''
-Split the training data into training and validation datasets.
-The following split will be used: 80% of the dataset will be used as training data. 20% of the dataset will be used as validation data
-Shuffle the data using the random seed.
+Compute a PCA on the images.
+The optimal number of principal components will be determined through trial-and-error.
+First iteration: 300 components
 '''
-random_seed = 5
-X_train,X_val,Y_train,Y_val = train_test_split(train_data,train_label,test_size=0.1,random_state=random_seed)
+n_components = 300
+
+print("Extracting the top %d eigenfaces from %d faces." % (n_components,X_train.shape[0]))
+t0 = time()
+pca = RandomizedPCA(n_components=n_components,whiten=True).fit(X_train)
+print("Extraction completed. Time elapsed: %0.4fs." % (time() - t0))
+
+eigenfaces = pca.components_.reshape((n_components,h,w))
+
+print("Projecting onto the eigenbasis.")
+t0 = time(90
+X_train_pca = pca.transform(X_train)
+X_test_pca = pca.transform(X_test)
+print("Projection completed in: %0.4fs" % (time() - t0))
+
+###############################################################################
+
+'''
+Train a SVM to classify the images into "smile" and "not smile".
+Perform a Grid-Search to find the best hyper-parameters.
+'''
+param_grid = {'C':[1e3,5e3,1e5,5e4,1e5],'gamma':[0.0001,0.0005,0.001,0.005,0.01,0.1],'kernel'=['rbf','linear']}
+t0 = time()
+clf = GridSearchCV(SVC(kernel='rbf',class_weight='auto'),param_grid)
+clf = clf.fit(X_train_pca,Y_train)
+print("Fitting done in: %0.4fs" % (time() - t0))
+print("The parameters are: ")
+print(clf.best_estimator_)
