@@ -84,7 +84,7 @@ print("\nExtraction completed. Time elapsed: %0.4fs." % (time() - t0))
 
 eigenfaces = pca.components_.reshape((n_components,h,w))
 
-print("\n Projecting onto the eigenbasis.")
+print("\nProjecting onto the eigenbasis.")
 t0 = time()
 X_train_pca = pca.transform(X_train)
 X_test_pca = pca.transform(X_test)
