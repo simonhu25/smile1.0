@@ -93,9 +93,7 @@ print("\nProjection completed in: %0.4fs" % (time() - t0))
 ###############################################################################
 
 '''
-Train a SVM to classify the images into "smile" and "not smile".
-Perform a Grid-Search to find the best hyper-parameters.
-'''
+Old code:
 param_grid = {'C':[1e3,5e3,1e5,5e4,1e5],'gamma':[0.0001,0.0005,0.001,0.005,0.01,0.1],'kernel':['rbf','linear']}
 t0 = time()
 print('\nTraining the SVM classifier.\n')
@@ -104,3 +102,14 @@ clf = clf.fit(X_train_pca,Y_train)
 print("Fitting done in: %0.4fs" % (time() - t0))
 print("The parameters are: ")
 print(clf.best_estimator_)
+'''
+
+'''
+Train a SVM to classify the images into "smile" and "not smile".
+Perform a Grid-Search to find the best hyper-parameters.
+'''
+
+clf = SVC(kernel='linear',class_weight='balanced',cache_size=200,verbose=False,C=10.0,gamma=0.001)
+clf = clf.fit(X_train_pca,Y_train)
+print("Fitting done in: %0.4fs" % (time() - t0))
+print(clf.score(X_test_pca,Y_test))
