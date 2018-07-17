@@ -44,8 +44,8 @@ labels = np.load('truth_labels.npy').ravel()
 Download the images.
 These images will be uniformly resized to 100 x 100 (height, width) and stored in a numpy array.
 '''
-h = 100
-w = 100
+h = 64
+w = 64
 prod = h*w
 
 image_names = glob.glob('./images/*')
@@ -74,9 +74,9 @@ X_test = X_test.flatten().reshape(n_test,prod)
 '''
 Compute a PCA on the images.
 The optimal number of principal components will be determined through trial-and-error.
-First iteration: 300 components
+First iteration: 200 components
 '''
-n_components = 150
+n_components = 400
 
 print("\nExtracting the top %d eigenfaces from %d faces." % (n_components,X_train.shape[0]))
 t0 = time()
@@ -94,6 +94,13 @@ print("\nProjection completed in: %0.4fs" % (time() - t0))
 ###############################################################################
 
 '''
+Normalize the PCA images, since we are going to be feeding them into the SVM.
+'''
+#X_train_pca
+
+##############################################################################
+
+'''
 Train a SVM to classify the images into "smile" and "not smile".
 Perform a Grid-Search to find the best hyper-parameters.
 '''
@@ -101,7 +108,7 @@ Perform a Grid-Search to find the best hyper-parameters.
 param_grid = {'C':[1e3,5e3,1e5,5e4,1e5],'gamma':[0.0001,0.0005,0.001,0.005,0.01,0.1]}
 t0 = time()
 print('\nTraining the SVM classifier.\n')
-clf = GridSearchCV(SVC(kernel='rbf',class_weight=None),param_grid,verbose=0)
+clf = GridSearchCV(SVC(kernel='linear',class_weight=None),param_grid,verbose=0)
 clf = clf.fit(X_train_pca,Y_train)
 print("Fitting done in: %0.4fs" % (time() - t0))
 print("The parameters are: ")
